@@ -310,7 +310,7 @@ associates
 # Creating pallette to use with leaflet
 pal <- pal_func("viridis", associates)
 
-map_func(associates, "Number of People (Ones)", "Bachelors Degrees in New Jersey")
+map_func(associates, "Number of People (Ones)", "Associates Degrees in New Jersey")
 ```
 
 # House Value
