@@ -1,0 +1,595 @@
+---
+title: "UBS Analysis"
+author: "Rachelle Cha"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float: true
+    code_folding: hide
+    theme: journal
+    df_print: paged
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  message = FALSE,
+  echo = TRUE,
+  warning = FALSE
+)
+library(tidycensus)
+library(tidyverse)
+library(leaflet)
+library(sf)
+library(viridis)
+library(styler)
+options(tigris_use_cache = TRUE)
+```
+
+```{r}
+# The website says the Amcerican Community Survey (ACS) has their most recent data set as 2014-2018. The ACS includesvariables on social, economic, housing, and demographic aspects. It has 25,070 variables.
+
+var <- load_variables(year = 2018, dataset = "acs5")
+```
+
+```{r}
+# Finding the demographic variables and renaming them in a list
+demo_varsacs5 <- c(
+  associates = "B15003_021",
+  bachelors = "B15003_022",
+  poverty = "B17001_002",
+  female = "B01001_026",
+  male = "B01001_002",
+  diff_stateHouse = "B07013_014", 
+  diff_stateRent = "B07013_015", 
+  diff_countyHouse = "B07013_011", 
+  diff_countyRent = "B07013_012", 
+  house_val = "B25107_001",
+  self_income = "B19053_002", 
+  health_ins = 'B27001_001',
+  public_ins = "B27003_001",
+  income = "B06011_001",
+  male_car = "B08006_019",
+  female_car = "B08006_036",
+  pharm = "B24115_202"
+)
+```
+
+
+[Census tracts](https://www.census.gov/programs-surveys/geography/about/glossary.html) are small, relatively permanent statistical subdivisions of  counties designed to be relatively homogeneous units with respect to population characteristics, economic status, and living conditions. They are updated by local participants prior to each decennial census as part of the Census Bureau's Participant Statistical Areas Program. Census tracts generally have a population size between 1,200 and 8,000 people, with an optimum size of 4,000 people. Census tract boundaries never cross county lines
+
+```{r}
+# We have to use tracts so that we can get geographical information using sf are leaflet
+nj_demo_tracts <- get_acs(
+  state = "NJ",
+  geography = "tract",
+  variables = demo_varsacs5,
+  # Use 2018 as year for more recent data
+  year = 2018,
+  geometry = TRUE,
+  keep_geo_vars = TRUE
+) %>%
+  # 4326 is most common map form
+  st_transform(4326)
+```
+
+```{r}
+# Function to create tracts
+tracts_func <- function(data, county_n, var_n) {
+  data %>%
+    # Filters the county
+    filter(COUNTYFP == county_n) %>%
+    # Filters for the variable from our variable list
+    filter(variable == var_n)
+}
+```
+
+```{r}
+#Function to pull variable from all tracts in NJ
+alco_func <- function(var_n){
+  nj_demo_tracts %>%
+  filter(COUNTYFP == "001" 
+         | COUNTYFP == "003" 
+         | COUNTYFP == "005" 
+         | COUNTYFP == "009" 
+         | COUNTYFP == "007"
+         | COUNTYFP == "011"
+         | COUNTYFP == "013" 
+         | COUNTYFP == "015" 
+         | COUNTYFP == "017" 
+         | COUNTYFP == "019"
+         | COUNTYFP == "021"
+         | COUNTYFP == "023"
+         | COUNTYFP == "025"
+         | COUNTYFP == "027"
+         | COUNTYFP == "029"
+         | COUNTYFP == "031"
+         | COUNTYFP == "033"
+         | COUNTYFP == "035"
+         | COUNTYFP == "037"
+         | COUNTYFP == "039"
+         | COUNTYFP == "041") %>% 
+  filter(variable == var_n) 
+}
+```
+
+```{r}
+#function to color the map. takes in string color pallette and mapping variable
+pal_func <- function(color, var_name){
+  colorNumeric(
+  palette = color,
+  domain = var_name$estimate,
+  reverse = TRUE
+  )
+}
+```
+
+```{r}
+nj_pop <- nj_demo_tracts %>% 
+  filter(COUNTYFP == "001" 
+         | COUNTYFP == "003" 
+         | COUNTYFP == "005" 
+         | COUNTYFP == "009" 
+         | COUNTYFP == "007"
+         | COUNTYFP == "011"
+         | COUNTYFP == "013" 
+         | COUNTYFP == "015" 
+         | COUNTYFP == "017" 
+         | COUNTYFP == "019"
+         | COUNTYFP == "021"
+         | COUNTYFP == "023"
+         | COUNTYFP == "025"
+         | COUNTYFP == "027"
+         | COUNTYFP == "029"
+         | COUNTYFP == "031"
+         | COUNTYFP == "033"
+         | COUNTYFP == "035"
+         | COUNTYFP == "037"
+         | COUNTYFP == "039"
+         | COUNTYFP == "041") %>% 
+  select(-(moe)) %>%
+            spread(key = variable, value = estimate)  %>% 
+  mutate(estimate = female + male)
+
+nj_pop
+```
+
+```{r}
+
+drop = c("associates",
+  "bachelors",
+  "poverty",
+  "diff_stateHouse", 
+  "diff_stateRent", 
+  "diff_countyHouse", 
+  "diff_countyRent", 
+  "house_val",
+  "self_income", 
+  "health_ins",
+  "income",
+  "male_car",
+  "female_car",
+  "pharm",
+  "female",
+  "male",
+  "population")
+nj_pop <- nj_pop[,!(names(nj_pop) %in% drop)]
+```
+
+```{r}
+car <- nj_demo_tracts %>% 
+  filter(COUNTYFP == "001" 
+         | COUNTYFP == "003" 
+         | COUNTYFP == "005" 
+         | COUNTYFP == "009" 
+         | COUNTYFP == "007"
+         | COUNTYFP == "011"
+         | COUNTYFP == "013" 
+         | COUNTYFP == "015" 
+         | COUNTYFP == "017" 
+         | COUNTYFP == "019"
+         | COUNTYFP == "021"
+         | COUNTYFP == "023"
+         | COUNTYFP == "025"
+         | COUNTYFP == "027"
+         | COUNTYFP == "029"
+         | COUNTYFP == "031"
+         | COUNTYFP == "033"
+         | COUNTYFP == "035"
+         | COUNTYFP == "037"
+         | COUNTYFP == "039"
+         | COUNTYFP == "041") %>% 
+  select(-(moe)) %>%
+            spread(key = variable, value = estimate)  %>% 
+  mutate(estimate = female_car + male_car)
+
+car
+```
+
+
+```{r}
+drop = c("associates",
+  "bachelors",
+  "poverty",
+  "diff_stateHouse", 
+  "diff_stateRent", 
+  "diff_countyHouse", 
+  "diff_countyRent", 
+  "house_val",
+  "self_income", 
+  "health_ins",
+  "income",
+  "male_car",
+  "female_car",
+  "pharm",
+  "female",
+  "male",
+  "population")
+car <- nj_pop[,!(names(nj_pop) %in% drop)]
+```
+
+
+```{r}
+# Function for creating leaflet map
+map_func <- function(data, title, title2) {
+  data %>%
+    leaflet(width = "100%") %>%
+    addProviderTiles(provider = "CartoDB.Positron") %>%
+    addPolygons(
+      label = ~ str_extract(NAME.y, "^([^,]*)"),
+      stroke = FALSE,
+      smoothFactor = 0,
+      fillOpacity = 0.7,
+      color = ~ pal(estimate)
+    ) %>%
+    addLegend("bottomright",
+      pal = pal,
+      values = ~estimate,
+      title = title,
+      opacity = 1
+    ) %>%
+    addControl(title2, position = "topright")
+}
+```
+
+```{r}
+# Read in Museums
+
+m <- read.csv(file = "~/Desktop/UBS/m.csv")
+
+m <- subset(m, m$State..Administrative.Location. == "NJ" & m$State.Code..FIPS. == 34)
+
+head(m)
+
+```
+
+
+# Poverty
+## Number of People Living in Poverty ccc
+
+```{r}
+poverty <- alco_func("poverty")
+poverty
+```
+
+
+# Bachelors
+## Number of People with Bachelors Degrees by Census Tract
+
+```{r}
+bachelors <- alco_func("bachelors")
+bachelors
+```
+
+# Associates
+## Number of People with Assocites Degrees by Census Tract
+
+```{r}
+associates <- alco_func("associates")
+associates
+```
+
+# House Value
+## Housing Value in New Jersey by Census Tract
+
+```{r}
+house_val <- alco_func("house_val")
+house_val
+```
+
+# Population
+
+```{r}
+# Creating pallette to use with leaflet
+pal <- pal_func("viridis", nj_pop)
+
+map_func(nj_pop, "Nubmer of People (Ones)", "Population in New Jersey")
+```
+
+# Health Insurance
+## Number of People with Health Insurance (Private and Public) by Census Tract
+
+```{r}
+health_ins <- alco_func("health_ins")
+health_ins
+```
+
+# Income
+## Median Income in New Jersey by Census Tract
+
+```{r}
+income <- alco_func("income")
+income
+```
+
+```{r}
+# Creating pallette to use with leaflet
+pal <- pal_func("viridis", income)
+
+#map_func(income, "income", "income")
+
+income_map <- income %>%
+    leaflet(width = "100%") %>%
+    addProviderTiles(provider = "CartoDB.Positron") %>%
+    addPolygons(
+      label = ~ str_extract(NAME.y, "^([^,]*)"),
+      stroke = FALSE,
+      smoothFactor = 0,
+      fillOpacity = 0.7,
+      color = ~ pal(estimate)
+    ) %>%
+    addLegend("bottomright",
+      pal = pal,
+      values = ~estimate,
+      title = "Income (Dollars)",
+      opacity = 1
+    ) %>%
+# Adding the museums
+    addControl("Median Income in New Jersey", position = "topright") %>% 
+    addCircleMarkers(
+      lng= m$Longitude, lat= m$Latitude, radius = 1,
+      label= m$Museum.Name,
+      labelOptions = labelOptions(direction = 'bottom',
+                                offset=c(0,15)))
+
+income_map
+
+```
+
+# Car Ownership
+## Number of Cars Owned by Census Tract
+
+```{r}
+# Creating pallette to use with leaflet
+pal <- pal_func("viridis", car)
+
+map_func(car, "Number of Cars (Ones)", "Number of Cars Owned in New Jersey")
+```
+
+# People with Self-Employment Income
+## Number of People Who Reported to Having Self-Income
+
+```{r}
+self_income <- alco_func("self_income")
+self_income
+```
+
+```{r}
+# Creating pallette to use with leaflet
+pal <- pal_func("viridis", self_income)
+
+map_func(self_income, "Number of People (Ones)", "Number of People Who Reported to Having Self-Income")
+```
+
+# Moved from Different State (House)
+## Number of People who Moved from a Different State and Now Live in a House
+
+```{r}
+diff_stateHouse <- alco_func("diff_stateHouse")
+diff_stateHouse
+```
+
+```{r}
+# Creating pallette to use with leaflet
+pal <- pal_func("viridis", diff_stateHouse)
+
+map_func(diff_stateHouse, "Number of People (Ones)", "Number of People who Moved from a Different State and Now Live in a House")
+```
+
+# Moved from Different State (Rent)
+## Number of People who Moved from a Different State and Now Live in a Rental Unit
+
+```{r}
+diff_stateRent <- alco_func("diff_stateRent")
+diff_stateRent
+```
+
+```{r}
+# Creating pallette to use with leaflet
+pal <- pal_func("viridis", diff_stateRent)
+
+map_func(diff_stateRent, "Number of People (Ones)", "Number of People who Moved from a Different State and Now Live in a Rental Unit")
+```
+
+# Moved from Different County (House)
+## Number of People who Moved from a Different County and Now Live in a House
+
+```{r}
+diff_countyHouse <- alco_func("diff_countyHouse")
+diff_countyHouse
+```
+
+```{r}
+# Creating pallette to use with leaflet
+pal <- pal_func("viridis", diff_countyHouse)
+
+map_func(diff_countyHouse, "Number of People (Ones)", "Number of People who Moved from a Different County and Now Live in a House")
+```
+
+# Moved from Different County (Rent)
+## Number of People who Moved from a Different State and Now Live in a Rental Unit
+
+```{r}
+diff_countyRent <- alco_func("diff_countyRent")
+diff_countyRent
+```
+
+```{r}
+# making a table out of this stuff
+
+names(poverty)[6] <- "census_tract"
+names(poverty)[10] <- "full_name"
+names(poverty)[12] <- "poverty"
+
+poverty <- select(poverty, census_tract, full_name, poverty)
+
+poverty$geometry <- NULL
+
+poverty
+
+
+```
+
+```{r}
+
+names(bachelors)[10] <- "full_name"
+names(bachelors)[12] <- "bachelors"
+
+bachelors <- select(bachelors, full_name, bachelors)
+
+bachelors$geometry <- NULL
+
+bachelors
+
+```
+
+```{r}
+
+poverty <- merge(poverty, bachelors, by = "full_name")
+
+```
+
+
+```{r}
+
+names(associates)[10] <- "full_name"
+names(associates)[12] <- "associates"
+associates$geometry <- NULL
+
+associates <- select(associates, associates, full_name)
+
+associates
+
+```
+
+```{r}
+
+poverty <- merge(poverty, associates, by = "full_name")
+
+```
+
+
+```{r}
+
+names(car)[10] <- "full_name"
+names(car)[13] <- "car"
+car$geometry <- NULL
+
+car <- select(car, full_name, car)
+
+
+names(diff_countyHouse)[10] <- "full_name"
+names(diff_countyHouse)[12] <- "diff_countyHouse"
+diff_countyHouse$geometry <- NULL
+
+diff_countyHouse <- select(diff_countyHouse, full_name, diff_countyHouse)
+
+
+names(diff_countyRent)[10] <- "full_name"
+names(diff_countyRent)[12] <- "diff_countyRent"
+diff_countyRent$geometry <- NULL
+
+diff_countyRent <- select(diff_countyRent, full_name, diff_countyRent)
+
+
+names(diff_stateRent)[10] <- "full_name"
+names(diff_stateRent)[12] <- "diff_stateRent"
+diff_stateRent$geometry <- NULL
+
+diff_stateRent <- select(diff_stateRent, full_name, diff_stateRent)
+
+
+names(diff_stateHouse)[10] <- "full_name"
+names(diff_stateHouse)[12] <- "diff_stateHouse"
+diff_stateHouse$geometry <- NULL
+
+diff_stateHouse <- select(diff_stateHouse, full_name, diff_stateHouse)
+
+
+names(health_ins)[10] <- "full_name"
+names(health_ins)[12] <- "health_ins"
+health_ins$geometry <- NULL
+
+health_ins <- select(health_ins, full_name, health_ins)
+
+
+names(house_val)[10] <- "full_name"
+names(house_val)[12] <- "house_val"
+house_val$geometry <- NULL
+
+house_val <- select(house_val, full_name, house_val)
+
+
+names(nj_pop)[10] <- "full_name"
+names(nj_pop)[13] <- "population"
+nj_pop$geometry <- NULL
+
+nj_pop <- select(nj_pop, full_name, population)
+
+
+names(self_income)[10] <- "full_name"
+names(self_income)[12] <- "self_income"
+self_income$geometry <- NULL
+
+self_income <- select(self_income, full_name, self_income)
+
+
+```
+
+```{r}
+
+poverty <- merge(poverty, car, by = "full_name")
+poverty <- merge(poverty, diff_countyHouse, by = "full_name")
+poverty <- merge(poverty, diff_countyRent, by = "full_name")
+poverty <- merge(poverty, diff_stateHouse, by = "full_name")
+poverty <- merge(poverty, diff_stateRent, by = "full_name")
+poverty <- merge(poverty, health_ins, by = "full_name")
+
+```
+
+```{r}
+poverty <- merge(poverty, house_val, by = "full_name")
+poverty <- merge(poverty, nj_pop, by = "full_name")
+poverty <- merge(poverty, self_income, by = "full_name")
+```
+
+```{r}
+
+poverty$museums <- NA
+poverty$score <- NA
+
+```
+
+```{r}
+
+write.csv(poverty, "/Users/rachellecha/Desktop/UBS/UBSdata.csv", row.names = FALSE)
+
+
+```
+
+
+
+
+
