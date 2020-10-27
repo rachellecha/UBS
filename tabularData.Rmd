@@ -589,6 +589,82 @@ write.csv(poverty, "/Users/rachellecha/Desktop/UBS/UBSdata.csv", row.names = FAL
 
 ```
 
+```{r}
+
+
+var2019 <- get_acs(geography = "tract", state = "34", year = 2018, variables = "age")
+
+```
+
+
+
+```{r}
+#create df that's just the ages 
+#take median across the row
+
+age <- c(
+  mUnder5 = "B01001_003",
+  m5to9 = "B01001_004",
+  m10to14 = "B01001_005",
+  m11to17 = "B01001_006",
+  m18to19 = "B01001_007",
+  m20 = "B01001_008",
+  m21 = "B01001_009",
+  m22to24 = "B01001_010",
+  m25to29 = "B01001_011",
+  m30to34 = "B01001_012",
+  m35to39 = "B01001_013",
+  m40to44 = "B01001_014",
+  m45to49 = "B01001_015",
+  m50to54 = "B01001_016",
+  m55to59 = "B01001_017",
+  m60to61 = "B01001_018",
+  m62to64 = "B01001_019",
+  m65to66 = "B01001_020",
+  m67to69 = "B01001_021",
+  m70to74 = "B01001_022",
+  m75to79 = "B01001_023",
+  m80to84 = "B01001_024",
+  mOver85 = "B01001_025",
+  fUnder5 = "B01001_027",
+  f5to9 = "B01001_028",
+  f10to14 = "B01001_029",
+  f11to17 = "B01001_030",
+  f18to19 = "B01001_031",
+  f20 = "B01001_032",
+  f21 = "B01001_033",
+  f22to24 = "B01001_034",
+  f25to29 = "B01001_035",
+  f30to34 = "B01001_036",
+  f35to39 = "B01001_037",
+  f40to44 = "B01001_038",
+  f45to49 = "B01001_039",
+  f50to54 = "B01001_040",
+  f55to59 = "B01001_041",
+  f60to61 = "B01001_042",
+  f62to64 = "B01001_043",
+  f65to66 = "B01001_044",
+  f67to69 = "B01001_045",
+  f70to74 = "B01001_046",
+  f75to79 = "B01001_047",
+  f80to84 = "B01001_048",
+  fOver85 = "B01001_049"
+)
+
+
+ages <- get_acs(
+  state = "NJ",
+  geography = "tract",
+  variables = age,
+  # Use 2018 as year for more recent data
+  year = 2018,
+  geometry = FALSE,
+  keep_geo_vars = FALSE
+)
+
+
+```
+
 
 
 

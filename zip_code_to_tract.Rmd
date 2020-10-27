@@ -1,0 +1,74 @@
+---
+title: "ZIP code information of TN SD-26"
+subtitle: "Matched to census tract"
+author: "Civil Miller-Watkins Bluebonnet Team"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float: true
+    code_folding: hide
+    theme: journal
+    df_print: paged
+editor_options: 
+  chunk_output_type: console
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+library(tidycensus)
+library(tidyverse)
+library(tigris)
+library(leaflet)
+library(sf)
+library(viridis)
+library(styler)
+library(DT)
+library(readr)
+library(ggthemes)
+library(patchwork)
+library(rprojroot)
+library(lubridate)
+library(readxl)
+library(stringr)
+options(tigris_use_cache = TRUE)
+```
+
+```{r}
+ZIP_TRACT_062020 <- read_excel("/Users/rachellecha/Desktop/UBS/ZIP_TRACT_062020.xlsx")
+View(ZIP_TRACT_062020)
+```
+
+```{r}
+table_function <- function(data) {
+  DT::datatable(
+  data, 
+  style = "default", 
+  class = "compact stripe",
+  colnames = c("Zip Codes" = "ZIP",
+               "Tracts" = "TRACT"),
+  options=list(
+    columnDefs = list(list(visible=FALSE)),
+                 list(className = "dt-center"),
+    initComplete = JS(
+    "function(settings, json) {",
+    "$(this.api().table().header()).css({'background-color': '#ec746c', 'color': '#fff'});",
+    "}")),
+  filter = "top"
+)
+}
+```
+
+```{r}
+zip_tract_select <- ZIP_TRACT_062020 %>% 
+  filter(str_detect(TRACT, "^34")) %>% 
+  select(-RES_RATIO, -BUS_RATIO, -OTH_RATIO, -TOT_RATIO)
+```
+
+```{r}
+table_function(zip_tract_select)
+```
+
