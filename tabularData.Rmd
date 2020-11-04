@@ -31,7 +31,7 @@ options(tigris_use_cache = TRUE)
 ```{r}
 # The website says the Amcerican Community Survey (ACS) has their most recent data set as 2014-2018. The ACS includesvariables on social, economic, housing, and demographic aspects. It has 25,070 variables.
 
-var <- load_variables(year = 2018, dataset = "acs5")
+var <- load_variables(year = 2012, dataset = "acs5")
 ```
 
 ```{r}
@@ -52,8 +52,7 @@ demo_varsacs5 <- c(
   public_ins = "B27003_001",
   income = "B06011_001",
   male_car = "B08006_019",
-  female_car = "B08006_036",
-  pharm = "B24115_202"
+  female_car = "B08006_036"
 )
 ```
 
@@ -66,8 +65,8 @@ nj_demo_tracts <- get_acs(
   state = "NJ",
   geography = "tract",
   variables = demo_varsacs5,
-  # Use 2018 as year for more recent data
-  year = 2018,
+  # Use 2014 as year for more recent data
+  year = 2012,
   geometry = TRUE,
   keep_geo_vars = TRUE
 ) %>%
@@ -578,13 +577,14 @@ poverty <- merge(poverty, self_income, by = "full_name")
 ```{r}
 
 poverty$museums <- NA
+poverty$pharmacy <- NA
 poverty$score <- NA
 
 ```
 
 ```{r}
 
-write.csv(poverty, "/Users/rachellecha/Desktop/UBS/UBSdata.csv", row.names = FALSE)
+write.csv(poverty, "/Users/rachellecha/Desktop/UBS/UBSdata2012.csv", row.names = FALSE)
 
 
 ```
