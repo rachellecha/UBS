@@ -69,7 +69,7 @@ nj_demo_tracts <- get_acs(
   year = 2012,
   geometry = TRUE,
   keep_geo_vars = TRUE
-) %>%
+  ) %>%
   # 4326 is most common map form
   st_transform(4326)
 ```
@@ -438,9 +438,9 @@ diff_countyRent
 ```{r}
 # making a table out of this stuff
 
-names(poverty)[6] <- "census_tract"
-names(poverty)[10] <- "full_name"
-names(poverty)[12] <- "poverty"
+names(poverty)[5] <- "census_tract"
+names(poverty)[13] <- "full_name"
+names(poverty)[15] <- "poverty"
 
 poverty <- select(poverty, census_tract, full_name, poverty)
 
@@ -453,8 +453,8 @@ poverty
 
 ```{r}
 
-names(bachelors)[10] <- "full_name"
-names(bachelors)[12] <- "bachelors"
+names(bachelors)[13] <- "full_name"
+names(bachelors)[15] <- "bachelors"
 
 bachelors <- select(bachelors, full_name, bachelors)
 
@@ -473,8 +473,8 @@ poverty <- merge(poverty, bachelors, by = "full_name")
 
 ```{r}
 
-names(associates)[10] <- "full_name"
-names(associates)[12] <- "associates"
+names(associates)[13] <- "full_name"
+names(associates)[15] <- "associates"
 associates$geometry <- NULL
 
 associates <- select(associates, associates, full_name)
@@ -492,64 +492,64 @@ poverty <- merge(poverty, associates, by = "full_name")
 
 ```{r}
 
-names(car)[10] <- "full_name"
-names(car)[13] <- "car"
+names(car)[13] <- "full_name"
+names(car)[16] <- "car"
 car$geometry <- NULL
 
 car <- select(car, full_name, car)
 
 
-names(diff_countyHouse)[10] <- "full_name"
-names(diff_countyHouse)[12] <- "diff_countyHouse"
+names(diff_countyHouse)[13] <- "full_name"
+names(diff_countyHouse)[15] <- "diff_countyHouse"
 diff_countyHouse$geometry <- NULL
 
 diff_countyHouse <- select(diff_countyHouse, full_name, diff_countyHouse)
 
 
-names(diff_countyRent)[10] <- "full_name"
-names(diff_countyRent)[12] <- "diff_countyRent"
+names(diff_countyRent)[13] <- "full_name"
+names(diff_countyRent)[15] <- "diff_countyRent"
 diff_countyRent$geometry <- NULL
 
 diff_countyRent <- select(diff_countyRent, full_name, diff_countyRent)
 
 
-names(diff_stateRent)[10] <- "full_name"
-names(diff_stateRent)[12] <- "diff_stateRent"
+names(diff_stateRent)[13] <- "full_name"
+names(diff_stateRent)[15] <- "diff_stateRent"
 diff_stateRent$geometry <- NULL
 
 diff_stateRent <- select(diff_stateRent, full_name, diff_stateRent)
 
 
-names(diff_stateHouse)[10] <- "full_name"
-names(diff_stateHouse)[12] <- "diff_stateHouse"
+names(diff_stateHouse)[13] <- "full_name"
+names(diff_stateHouse)[15] <- "diff_stateHouse"
 diff_stateHouse$geometry <- NULL
 
 diff_stateHouse <- select(diff_stateHouse, full_name, diff_stateHouse)
 
 
-names(health_ins)[10] <- "full_name"
-names(health_ins)[12] <- "health_ins"
+names(health_ins)[13] <- "full_name"
+names(health_ins)[15] <- "health_ins"
 health_ins$geometry <- NULL
 
 health_ins <- select(health_ins, full_name, health_ins)
 
 
-names(house_val)[10] <- "full_name"
-names(house_val)[12] <- "house_val"
+names(house_val)[13] <- "full_name"
+names(house_val)[15] <- "house_val"
 house_val$geometry <- NULL
 
 house_val <- select(house_val, full_name, house_val)
 
 
-names(nj_pop)[10] <- "full_name"
-names(nj_pop)[13] <- "population"
+names(nj_pop)[13] <- "full_name"
+names(nj_pop)[16] <- "population"
 nj_pop$geometry <- NULL
 
 nj_pop <- select(nj_pop, full_name, population)
 
 
-names(self_income)[10] <- "full_name"
-names(self_income)[12] <- "self_income"
+names(self_income)[13] <- "full_name"
+names(self_income)[15] <- "self_income"
 self_income$geometry <- NULL
 
 self_income <- select(self_income, full_name, self_income)
@@ -584,7 +584,7 @@ poverty$score <- NA
 
 ```{r}
 
-write.csv(poverty, "/Users/rachellecha/Desktop/UBS/UBSdata2012.csv", row.names = FALSE)
+write.csv(poverty, "C:\\Users\\rache\\Desktop\\UBSdata2012.csv", row.names = FALSE)
 
 
 ```
