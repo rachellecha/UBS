@@ -1,0 +1,116 @@
+---
+title: "income"
+author: "Rachelle Cha"
+date: "11/16/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  message = FALSE,
+  echo = TRUE,
+  warning = FALSE
+)
+library(tidycensus)
+library(tidyverse)
+library(leaflet)
+library(sf)
+library(viridis)
+library(styler)
+options(tigris_use_cache = TRUE)
+
+census_api_key('e66efce57685a6c8948518321300bcb6e0088479', overwrite = FALSE, install = FALSE)
+```
+
+```{r}
+# The website says the Amcerican Community Survey (ACS) has their most recent data set as 2014-2018. The ACS includes variables on social, economic, housing, and demographic aspects. It has 25,070 variables.
+
+var <- load_variables(year = 2012, dataset = "acs5")
+```
+
+```{r}
+# Finding the demographic variables and renaming them in a list
+demo_varsacs5 <- c(
+  associates = "B15003_021",
+  bachelors = "B15003_022",
+  poverty = "B17001_002",
+  female = "B01001_026",
+  male = "B01001_002",
+  diff_stateHouse = "B07013_014", 
+  diff_stateRent = "B07013_015", 
+  diff_countyHouse = "B07013_011", 
+  diff_countyRent = "B07013_012", 
+  house_val = "B25107_001",
+  self_income = "B19053_002", 
+  health_ins = 'B27001_001',
+  public_ins = "B27003_001",
+  income = "B06011_001",
+  male_car = "B08006_019",
+  female_car = "B08006_036"
+)
+```
+
+
+[Census tracts](https://www.census.gov/programs-surveys/geography/about/glossary.html) are small, relatively permanent statistical subdivisions of  counties designed to be relatively homogeneous units with respect to population characteristics, economic status, and living conditions. They are updated by local participants prior to each decennial census as part of the Census Bureau's Participant Statistical Areas Program. Census tracts generally have a population size between 1,200 and 8,000 people, with an optimum size of 4,000 people. Census tract boundaries never cross county lines
+
+```{r}
+# We have to use tracts so that we can get geographical information using sf are leaflet
+nj_demo_tracts <- get_acs(
+  state = "NJ",
+  geography = "tract",
+  variables = demo_varsacs5,
+  # Use 2014 as year for more recent data
+  year = 2012
+)
+```
+
+```{r}
+# Function to create tracts
+tracts_func <- function(data, county_n, var_n) {
+  data %>%
+    # Filters the county
+    filter(COUNTYFP == county_n) %>%
+    # Filters for the variable from our variable list
+    filter(variable == var_n)
+}
+```
+
+```{r}
+#Function to pull variable from all tracts in NJ
+alco_func <- function(var_n){
+  nj_demo_tracts %>%
+  filter(COUNTYFP == "001" 
+         | COUNTYFP == "003" 
+         | COUNTYFP == "005" 
+         | COUNTYFP == "009" 
+         | COUNTYFP == "007"
+         | COUNTYFP == "011"
+         | COUNTYFP == "013" 
+         | COUNTYFP == "015" 
+         | COUNTYFP == "017" 
+         | COUNTYFP == "019"
+         | COUNTYFP == "021"
+         | COUNTYFP == "023"
+         | COUNTYFP == "025"
+         | COUNTYFP == "027"
+         | COUNTYFP == "029"
+         | COUNTYFP == "031"
+         | COUNTYFP == "033"
+         | COUNTYFP == "035"
+         | COUNTYFP == "037"
+         | COUNTYFP == "039"
+         | COUNTYFP == "041") %>% 
+  filter(variable == var_n) 
+}
+```
+
+```{r}
+income2 <- income 
+```
+
+```{r}
+
+write.csv(income, "/Users/rachellecha/Desktop/UBS/income", row.names = FALSE)
+
+```
+

@@ -31,7 +31,7 @@ options(tigris_use_cache = TRUE)
 ```{r}
 # The website says the Amcerican Community Survey (ACS) has their most recent data set as 2014-2018. The ACS includes variables on social, economic, housing, and demographic aspects. It has 25,070 variables.
 
-var <- load_variables(year = 2019, dataset = "acs1")
+var <- load_variables(year = 2012, dataset = "acs5")
 ```
 
 ```{r}
@@ -66,8 +66,7 @@ nj_demo_tracts <- get_acs(
   geography = "tract",
   variables = demo_varsacs5,
   # Use 2014 as year for more recent data
-  year = 2019,
-  survey = "acs1"
+  year = 2012,
 )
 ```
 
@@ -321,10 +320,17 @@ income
 ```
 
 ```{r}
+
+write.csv(income, "/Users/rachellecha/Desktop/UBS/income", row.names = FALSE)
+
+```
+
+
+```{r}
 # Creating pallette to use with leaflet
 pal <- pal_func("viridis", income)
 
-#map_func(income, "income", "income")
+map_func(income, "income", "income")
 
 income_map <- income %>%
     leaflet(width = "100%") %>%
@@ -391,7 +397,7 @@ diff_stateHouse
 # Creating pallette to use with leaflet
 pal <- pal_func("viridis", diff_stateHouse)
 
-map_func(diff_stateHouse, "Number of People (Ones)", "Number of People who Moved from a Different State and Now Live in a House")
+
 ```
 
 # Moved from Different State (Rent)
@@ -406,7 +412,7 @@ diff_stateRent
 # Creating pallette to use with leaflet
 pal <- pal_func("viridis", diff_stateRent)
 
-map_func(diff_stateRent, "Number of People (Ones)", "Number of People who Moved from a Different State and Now Live in a Rental Unit")
+
 ```
 
 # Moved from Different County (House)
@@ -421,7 +427,7 @@ diff_countyHouse
 # Creating pallette to use with leaflet
 pal <- pal_func("viridis", diff_countyHouse)
 
-map_func(diff_countyHouse, "Number of People (Ones)", "Number of People who Moved from a Different County and Now Live in a House")
+
 ```
 
 # Moved from Different County (Rent)
@@ -488,6 +494,12 @@ poverty <- merge(poverty, associates, by = "full_name")
 
 
 ```{r}
+
+names(income)[10] <- "full_name"
+names(income)[12] <- "income"
+car$geometry <- NULL
+
+car <- select(car, full_name, car)
 
 names(car)[13] <- "full_name"
 names(car)[16] <- "car"
@@ -578,6 +590,14 @@ poverty$pharmacy <- NA
 poverty$score <- NA
 
 ```
+
+```{r}
+
+
+
+
+```
+
 
 ```{r}
 
